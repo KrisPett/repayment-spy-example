@@ -1,8 +1,13 @@
 package com.example.demo;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -12,12 +17,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class RepaymentAmountTests {
     LoanCalculatorController controller;
 
@@ -110,13 +119,15 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(111), loanApplication.getRepayment());
     }
 
+    @SneakyThrows
     @Test
+    @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
     public void test6YearLoanWithRounding() {
         //given
+        Thread.sleep(100);
         loanApplication.setPrincipal(5000);
         loanApplication.setTermInMonths(60);
         when(loanApplication.getInterestRate()).thenReturn(BigDecimal.valueOf(6.5));
-
         //when
         controller.processNewLoanApplication(loanApplication);
 
@@ -145,5 +156,6 @@ public class RepaymentAmountTests {
         when(controller.processNewLoanApplication(loanApplication)).then(InvocationOnMock::callRealMethod);
 
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
+        assertTimeout(Duration.ofSeconds(1), () -> Thread.sleep(900));
     }
 }
