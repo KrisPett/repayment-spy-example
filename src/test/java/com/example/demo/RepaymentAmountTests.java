@@ -52,7 +52,7 @@ public class RepaymentAmountTests {
     }
 
     @DisabledOnOs(OS.WINDOWS)
-    @RepeatedTest(5)
+    @RepeatedTest(500)
     public void testWhenYearLoanWholePounds() {
         given(loanApplication.getPrincipal()).willReturn(1200);
         given(loanApplication.getTermInMonths()).willReturn(12);
@@ -145,6 +145,7 @@ public class RepaymentAmountTests {
         assertTimeout(Duration.ofSeconds(1), () -> Thread.sleep(900));
     }
 
+    @Disabled
     @ParameterizedTest
     @DisplayName("mark resources as test-resources")
     @CsvFileSource(resources = "/details.csv")
