@@ -2,17 +2,14 @@ package com.example.demo;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doReturn;
 
 public class RepaymentAmountTests {
     LoanCalculatorController controller;
@@ -30,16 +27,17 @@ public class RepaymentAmountTests {
     @Test
     public void test1YearLoanWholePounds() {
         //given
-        loanApplication.setPrincipal(1200);
-        loanApplication.setTermInMonths(12);
-        doReturn(new BigDecimal(10)).when(loanApplication).getInterestRate();
+        given(loanApplication.getPrincipal()).willReturn(1200);
+        given(loanApplication.getTermInMonths()).willReturn(12);
+//        given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
+        when(loanApplication.getInterestRate()).thenReturn(new BigDecimal(10));
 
         //when
         controller.processNewLoanApplication(loanApplication);
-        verify(loanApplication).getInterestRate();
 
         //then
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
+
     }
 
     @Test
@@ -61,7 +59,7 @@ public class RepaymentAmountTests {
         //given
         loanApplication.setPrincipal(5000);
         loanApplication.setTermInMonths(60);
-        doReturn(new BigDecimal(6.5)).when(loanApplication).getInterestRate();
+        when(loanApplication.getInterestRate()).thenReturn(BigDecimal.valueOf(6.5));
 
         //when
         controller.processNewLoanApplication(loanApplication);
