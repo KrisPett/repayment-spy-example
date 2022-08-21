@@ -1,12 +1,13 @@
 package com.example.demo;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,7 +42,7 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
 
-    @Test
+    @RepeatedTest(5)
     public void testWhenYearLoanWholePounds() {
         given(loanApplication.getPrincipal()).willReturn(1200);
         given(loanApplication.getTermInMonths()).willReturn(12);
@@ -56,12 +57,13 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
 
-    @Test
-    public void test1888YearLoanWholePounds() {
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 400})
+    public void test1888YearLoanWholePounds(int amount) {
         given(loanApplication.getPrincipal()).willReturn(1200);
         given(loanApplication.getTermInMonths()).willReturn(12);
         given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
-
+        System.out.println(amount);
         when(controller.processNewLoanApplication(loanApplication)).then(InvocationOnMock::callRealMethod);
 
         then(loanApplication).should().setRepayment(BigDecimal.valueOf(110));
@@ -78,13 +80,14 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
 
-    @Test
-    public void test2YearLoanWholePounds() {
+    @ParameterizedTest
+    @CsvSource({"100, Mary", "200, Rachid"})
+    public void test2YearLoanWholePounds(int amount, String name) {
         //given
         loanApplication.setPrincipal(1200);
         loanApplication.setTermInMonths(24);
         doReturn(new BigDecimal(10)).when(loanApplication).getInterestRate();
-
+        System.out.println(amount + " " + name);
         //when
         controller.processNewLoanApplication(loanApplication);
 
@@ -92,8 +95,9 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(60), loanApplication.getRepayment());
     }
 
-    @Test
-    public void test5YearLoanWithRounding() {
+    @ParameterizedTest
+    @CsvFileSource(resources = "/details.csv")
+    public void test5YearLoanWithRounding(double amount, String name) {
         //given
         loanApplication.setPrincipal(5000);
         loanApplication.setTermInMonths(60);
@@ -101,7 +105,7 @@ public class RepaymentAmountTests {
 
         //when
         controller.processNewLoanApplication(loanApplication);
-
+        System.out.println(amount + " " + name);
         //then
         assertEquals(new BigDecimal(111), loanApplication.getRepayment());
     }
@@ -130,6 +134,7 @@ public class RepaymentAmountTests {
 
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
+
 
     @Test
     public void test166YearLoanWholePounds() {
