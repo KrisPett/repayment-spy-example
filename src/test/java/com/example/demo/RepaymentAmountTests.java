@@ -1,10 +1,10 @@
 package com.example.demo;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -51,6 +51,7 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
 
+    @DisabledOnOs(OS.WINDOWS)
     @RepeatedTest(5)
     public void testWhenYearLoanWholePounds() {
         given(loanApplication.getPrincipal()).willReturn(1200);
@@ -104,21 +105,6 @@ public class RepaymentAmountTests {
         assertEquals(new BigDecimal(60), loanApplication.getRepayment());
     }
 
-    @ParameterizedTest
-    @CsvFileSource(resources = "/details.csv")
-    public void test5YearLoanWithRounding(double amount, String name) {
-        //given
-        loanApplication.setPrincipal(5000);
-        loanApplication.setTermInMonths(60);
-        when(loanApplication.getInterestRate()).thenReturn(BigDecimal.valueOf(6.5));
-
-        //when
-        controller.processNewLoanApplication(loanApplication);
-        System.out.println(amount + " " + name);
-        //then
-        assertEquals(new BigDecimal(111), loanApplication.getRepayment());
-    }
-
     @SneakyThrows
     @Test
     @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
@@ -157,5 +143,21 @@ public class RepaymentAmountTests {
 
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
         assertTimeout(Duration.ofSeconds(1), () -> Thread.sleep(900));
+    }
+
+    @Disabled("works")
+    @ParameterizedTest
+    @CsvFileSource(resources = "/resources/details.csv")
+    public void test5YearLoanWithRounding(double amount, String name) {
+        //given
+        loanApplication.setPrincipal(5000);
+        loanApplication.setTermInMonths(60);
+        when(loanApplication.getInterestRate()).thenReturn(BigDecimal.valueOf(6.5));
+
+        //when
+        controller.processNewLoanApplication(loanApplication);
+        System.out.println(amount + " " + name);
+        //then
+        assertEquals(new BigDecimal(111), loanApplication.getRepayment());
     }
 }
