@@ -145,9 +145,9 @@ public class RepaymentAmountTests {
         assertTimeout(Duration.ofSeconds(1), () -> Thread.sleep(900));
     }
 
-    @Disabled("works")
     @ParameterizedTest
-    @CsvFileSource(resources = "/resources/details.csv")
+    @DisplayName("mark resources as test-resources")
+    @CsvFileSource(resources = "/details.csv")
     public void test5YearLoanWithRounding(double amount, String name) {
         //given
         loanApplication.setPrincipal(5000);
