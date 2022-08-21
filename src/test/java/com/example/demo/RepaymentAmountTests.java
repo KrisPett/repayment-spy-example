@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -9,15 +10,17 @@ import org.mockito.invocation.InvocationOnMock;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.internet.MimeMessage;
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 public class RepaymentAmountTests {
-
     LoanCalculatorController controller;
 
     LoanApplication loanApplication = spy(LoanApplication.class);
@@ -36,7 +39,44 @@ public class RepaymentAmountTests {
         given(loanApplication.getTermInMonths()).willReturn(12);
         given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
 
+        controller.processNewLoanApplication(loanApplication);
+
+        assertEquals(new BigDecimal(110), loanApplication.getRepayment());
+    }
+
+    @Test
+    public void testWhenYearLoanWholePounds() {
+        given(loanApplication.getPrincipal()).willReturn(1200);
+        given(loanApplication.getTermInMonths()).willReturn(12);
+        given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
+
         when(controller.processNewLoanApplication(loanApplication)).then(InvocationOnMock::callRealMethod);
+
+        verify(repository, times(1)).save(loanApplication);
+        verify(repository, atLeastOnce()).save(any());
+        verify(repository, never()).deleteAll();
+        then(loanApplication).should().setRepayment(BigDecimal.valueOf(110));
+        assertEquals(new BigDecimal(110), loanApplication.getRepayment());
+    }
+
+    @Test
+    public void test1888YearLoanWholePounds() {
+        given(loanApplication.getPrincipal()).willReturn(1200);
+        given(loanApplication.getTermInMonths()).willReturn(12);
+        given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
+
+        when(controller.processNewLoanApplication(loanApplication)).then(InvocationOnMock::callRealMethod);
+
+        then(loanApplication).should().setRepayment(BigDecimal.valueOf(110));
+    }
+
+    @Test
+    public void testWhenThenYearLoanWholePounds() {
+        when(loanApplication.getPrincipal()).thenReturn(1200);
+        when(loanApplication.getTermInMonths()).thenReturn(12);
+        when(loanApplication.getInterestRate()).thenReturn(new BigDecimal(10));
+
+        controller.processNewLoanApplication(loanApplication);
 
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
@@ -90,6 +130,17 @@ public class RepaymentAmountTests {
         given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
 
         controller.processNewLoanApplication(loanApplication);
+
+        assertEquals(new BigDecimal(110), loanApplication.getRepayment());
+    }
+
+    @Test
+    public void test166YearLoanWholePounds() {
+        given(loanApplication.getPrincipal()).willReturn(1200);
+        given(loanApplication.getTermInMonths()).willReturn(12);
+        given(loanApplication.getInterestRate()).willReturn(new BigDecimal(10));
+
+        when(controller.processNewLoanApplication(loanApplication)).then(InvocationOnMock::callRealMethod);
 
         assertEquals(new BigDecimal(110), loanApplication.getRepayment());
     }
