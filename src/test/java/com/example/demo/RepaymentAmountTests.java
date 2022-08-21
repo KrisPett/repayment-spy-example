@@ -2,8 +2,11 @@ package com.example.demo;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,7 +20,7 @@ import static org.mockito.Mockito.*;
 public class RepaymentAmountTests {
     LoanCalculatorController controller;
 
-    LoanApplication loanApplication = spy(LoanApplication.class);
+    LoanApplication loanApplication = spy(new LoanApplication());
     LoanRepository repository = mock(LoanRepository.class);
     JavaMailSender mailSender = mock(JavaMailSender.class);
     RestTemplate restTemplate = mock(RestTemplate.class);
